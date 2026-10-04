@@ -1,0 +1,25 @@
+{
+  "name": "deel-2---video",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch ./bin/www",
+    "start": "node ./bin/www",
+    "format": "prettier --write \"**/*.{js,json,md}\""
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.7",
+    "cors": "^2.8.5",
+    "debug": "~4.4.3",
+    "dotenv": "^17.2.3",
+    "ejs": "~3.1.10",
+    "express": "~5.2.1",
+    "http-errors": "~2.0.1",
+    "morgan": "~1.10.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11",
+    "prettier": "^3.7.4"
+  }
+}
