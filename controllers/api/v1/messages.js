@@ -10,6 +10,24 @@ const messages = [
 ]
 
 export const list = (req, res, next) => {
+  const username = req.query.user
+
+  if (username) {
+    const userMessages = messages.filter(
+      message => message.user.toLowerCase() === username.toLowerCase()
+    )
+
+    let result = {
+      status: 'success',
+      message: `Messages from user ${username}`,
+      data: {
+        messages: userMessages,
+      },
+    }
+
+    return res.json(result)
+  }
+
   let result = {
     status: 'success',
     message: 'GETTING messages',
@@ -21,14 +39,13 @@ export const list = (req, res, next) => {
   res.json(result)
 }
 
-
 export const show = (req, res, next) => {
   const id = req.params.id
   const message = messages[id]
 
   if (!message) {
     return res.status(404).json({
-      status: 'error',
+      status: 'fail',
       message: 'Message not found',
     })
   }
@@ -44,31 +61,68 @@ export const show = (req, res, next) => {
   res.json(result)
 }
 
-
 export const create = (req, res, next) => {
+  const newMessage = req.body.message
+
+  messages.push(newMessage)
+
   let result = {
     status: 'success',
-    data: {},
+    message: 'Message saved',
+    data: {
+      message: newMessage,
+    },
   }
 
   res.json(result)
 }
-
 
 export const update = (req, res, next) => {
+  const id = req.params.id
+
+  if (!messages[id]) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Message not found',
+    })
+  }
+
+  messages[id] = {
+    ...messages[id],
+    ...req.body.message,
+  }
+
   let result = {
     status: 'success',
-    data: {},
+    message: 'Message updated',
+    data: {
+      message: messages[id],
+    },
   }
 
   res.json(result)
 }
 
-
 export const remove = (req, res, next) => {
+  const id = req.params.id
+
+  if (!messages[id]) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Message not found',
+    })
+  }
+
+  messages.splice(id, 1)
+
   let result = {
     status: 'success',
-    data: null,
+    message: 'Message deleted',
+    data: {
+      message: {
+        _id: id,
+      },
+    },
   }
 
   res.json(result)
