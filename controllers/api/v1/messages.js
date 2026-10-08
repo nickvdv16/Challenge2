@@ -67,7 +67,7 @@ export const create = (req, res, next) => {
 
   messages.push(newMessage)
 
-  res.status(201).json({
+  res.json({
     status: 'success',
     message: 'Message saved',
     data: {
