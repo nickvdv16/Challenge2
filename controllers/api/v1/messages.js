@@ -9,6 +9,8 @@ const messages = [
   }
 ]
 
+// GET /api/v1/messages
+// GET /api/v1/messages?user=username
 export const list = (req, res, next) => {
   const username = req.query.user
 
@@ -17,113 +19,110 @@ export const list = (req, res, next) => {
       message => message.user.toLowerCase() === username.toLowerCase()
     )
 
-    let result = {
+    return res.json({
       status: 'success',
       message: `Messages from user ${username}`,
       data: {
-        messages: userMessages,
-      },
-    }
-
-    return res.json(result)
+        messages: userMessages
+      }
+    })
   }
 
-  let result = {
+  res.json({
     status: 'success',
     message: 'GETTING messages',
     data: {
-      messages: messages,
-    },
-  }
-
-  res.json(result)
+      messages: messages
+    }
+  })
 }
 
+
+// GET /api/v1/messages/:id
 export const show = (req, res, next) => {
   const id = req.params.id
+
   const message = messages[id]
 
   if (!message) {
     return res.status(404).json({
       status: 'fail',
-      message: 'Message not found',
+      message: 'Message not found'
     })
   }
 
-  let result = {
+  res.json({
     status: 'success',
     message: `GETTING message ${id}`,
     data: {
-      message: message,
-    },
-  }
-
-  res.json(result)
+      message: message
+    }
+  })
 }
 
+
+// POST /api/v1/messages
 export const create = (req, res, next) => {
   const newMessage = req.body.message
 
   messages.push(newMessage)
 
-  let result = {
+  res.status(201).json({
     status: 'success',
     message: 'Message saved',
     data: {
-      message: newMessage,
-    },
-  }
-
-  res.json(result)
+      message: newMessage
+    }
+  })
 }
 
+
+// PUT /api/v1/messages/:id
 export const update = (req, res, next) => {
   const id = req.params.id
 
   if (!messages[id]) {
     return res.status(404).json({
       status: 'fail',
-      message: 'Message not found',
+      message: 'Message not found'
     })
   }
 
   messages[id] = {
     ...messages[id],
-    ...req.body.message,
+    ...req.body.message
   }
 
-  let result = {
+  res.json({
     status: 'success',
     message: 'Message updated',
     data: {
-      message: messages[id],
-    },
-  }
-
-  res.json(result)
+      message: messages[id]
+    }
+  })
 }
 
+
+// DELETE /api/v1/messages/:id
 export const remove = (req, res, next) => {
   const id = req.params.id
 
   if (!messages[id]) {
     return res.status(404).json({
       status: 'fail',
-      message: 'Message not found',
+      message: 'Message not found'
     })
   }
 
   messages.splice(id, 1)
 
-  let result = {
+  res.json({
     status: 'success',
     message: 'Message deleted',
     data: {
       message: {
-        _id: id,
-      },
-    },
-  }
-
-  res.json(result)
+        _id: id
+      }
+    }
+  })
 }
