@@ -9,7 +9,7 @@ export const list = async (req, res, next) => {
     if (username) {
       const messages = await Message.find({
         user: username
-      })
+      }).select('-__v')
 
       return res.json({
         status: 'success',
@@ -22,7 +22,7 @@ export const list = async (req, res, next) => {
 
     const messages = await Message.find()
 
-    res.json({
+    return res.json({
       status: 'success',
       message: 'GETTING messages',
       data: {
@@ -49,7 +49,7 @@ export const show = async (req, res, next) => {
       })
     }
 
-    res.json({
+    return res.json({
       status: 'success',
       message: `GETTING message ${id}`,
       data: {
@@ -67,7 +67,7 @@ export const create = async (req, res, next) => {
   try {
     const newMessage = await Message.create(req.body.message)
 
-    res.json({
+    return res.json({
       status: 'success',
       message: 'Message saved',
       data: {
@@ -101,7 +101,7 @@ export const update = async (req, res, next) => {
       })
     }
 
-    res.json({
+    return res.json({
       status: 'success',
       message: 'Message updated',
       data: {
@@ -128,7 +128,7 @@ export const remove = async (req, res, next) => {
       })
     }
 
-    res.json({
+    return res.json({
       status: 'success',
       message: 'Message deleted',
       data: {
