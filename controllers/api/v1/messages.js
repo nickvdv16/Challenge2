@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import Message from '../../../models/api/v1/Messages.js'
 
 // GET /api/v1/messages
@@ -30,7 +31,7 @@ export const list = async (req, res, next) => {
       message: message.text
     }))
 
-    res.json({
+    return res.json({
       status: 'success',
       message: 'GETTING messages',
       data: {
@@ -48,6 +49,13 @@ export const show = async (req, res, next) => {
   try {
     const id = req.params.id
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Message not found'
+      })
+    }
+
     const message = await Message.findById(id)
 
     if (!message) {
@@ -57,7 +65,7 @@ export const show = async (req, res, next) => {
       })
     }
 
-    res.json({
+    return res.json({
       status: 'success',
       message: `GETTING message ${id}`,
       data: {
@@ -77,9 +85,11 @@ export const show = async (req, res, next) => {
 // POST /api/v1/messages
 export const create = async (req, res, next) => {
   try {
-    const newMessage = await Message.create(req.body.message)
+    const messageData = req.body.message ?? req.body
 
-    res.json({
+    const newMessage = await Message.create(messageData)
+
+    return res.json({
       status: 'success',
       message: 'Message saved',
       data: {
@@ -97,11 +107,28 @@ export const update = async (req, res, next) => {
   try {
     const id = req.params.id
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Message not found'
+      })
+    }
+
+    const messageData = req.body.message ?? req.body
+
+    if (!messageData || Object.keys(messageData).length === 0) {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'No message data provided'
+      })
+    }
+
     const message = await Message.findByIdAndUpdate(
       id,
-      req.body.message,
+      messageData,
       {
-        new: true
+        new: true,
+        runValidators: true
       }
     )
 
@@ -112,7 +139,7 @@ export const update = async (req, res, next) => {
       })
     }
 
-    res.json({
+    return res.json({
       status: 'success',
       message: 'Message updated',
       data: {
@@ -130,6 +157,13 @@ export const remove = async (req, res, next) => {
   try {
     const id = req.params.id
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Message not found'
+      })
+    }
+
     const message = await Message.findByIdAndDelete(id)
 
     if (!message) {
@@ -139,7 +173,7 @@ export const remove = async (req, res, next) => {
       })
     }
 
-    res.json({
+    return res.json({
       status: 'success',
       message: 'Message deleted',
       data: {
