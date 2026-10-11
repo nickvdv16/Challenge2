@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import Message from '../../../models/api/v1/Messages.js'
 
 // GET /api/v1/messages
@@ -9,7 +10,7 @@ export const list = async (req, res, next) => {
     if (username) {
       const messages = await Message.find({
         user: username
-      })
+      }).select('-__v')
 
       return res.json({
         status: 'success',
@@ -40,10 +41,13 @@ export const show = async (req, res, next) => {
   try {
     const id = req.params.id
 
-    const message =
-      id === 'id'
-        ? await Message.findOne()
-        : await Message.findById(id)
+    let message
+
+    if (id === 'id') {
+      message = await Message.findOne().sort({ _id: 1 })
+    } else if (mongoose.isValidObjectId(id)) {
+      message = await Message.findById(id)
+    }
 
     if (!message) {
       return res.status(404).json({
@@ -90,43 +94,29 @@ export const update = async (req, res, next) => {
   try {
     const id = req.params.id
 
-    let updatedMessage
+    let message
 
     if (id === 'id') {
-      const message = await Message.findOne()
-
-      if (!message) {
-        return res.status(404).json({
-          status: 'fail',
-          message: 'Message not found'
-        })
-      }
-
-      updatedMessage = await Message.findByIdAndUpdate(
-        message._id,
-        req.body.message,
-        {
-          new: true,
-          runValidators: true
-        }
-      )
-    } else {
-      updatedMessage = await Message.findByIdAndUpdate(
-        id,
-        req.body.message,
-        {
-          new: true,
-          runValidators: true
-        }
-      )
+      message = await Message.findOne().sort({ _id: 1 })
+    } else if (mongoose.isValidObjectId(id)) {
+      message = await Message.findById(id)
     }
 
-    if (!updatedMessage) {
+    if (!message) {
       return res.status(404).json({
         status: 'fail',
         message: 'Message not found'
       })
     }
+
+    const updatedMessage = await Message.findByIdAndUpdate(
+      message._id,
+      req.body.message,
+      {
+        new: true,
+        runValidators: true
+      }
+    )
 
     return res.json({
       status: 'success',
@@ -146,29 +136,22 @@ export const remove = async (req, res, next) => {
   try {
     const id = req.params.id
 
-    let deletedMessage
+    let message
 
     if (id === 'id') {
-      const message = await Message.findOne()
-
-      if (!message) {
-        return res.status(404).json({
-          status: 'fail',
-          message: 'Message not found'
-        })
-      }
-
-      deletedMessage = await Message.findByIdAndDelete(message._id)
-    } else {
-      deletedMessage = await Message.findByIdAndDelete(id)
+      message = await Message.findOne().sort({ _id: 1 })
+    } else if (mongoose.isValidObjectId(id)) {
+      message = await Message.findById(id)
     }
 
-    if (!deletedMessage) {
+    if (!message) {
       return res.status(404).json({
         status: 'fail',
         message: 'Message not found'
       })
     }
+
+    const deletedMessage = await Message.findByIdAndDelete(message._id)
 
     return res.json({
       status: 'success',
