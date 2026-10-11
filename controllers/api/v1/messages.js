@@ -106,31 +106,31 @@ export const create = async (req, res, next) => {
 export const update = async (req, res, next) => {
   try {
     const id = req.params.id
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Message not found'
-      })
-    }
-
     const messageData = req.body.message ?? req.body
 
-    if (!messageData || Object.keys(messageData).length === 0) {
-      return res.status(400).json({
-        status: 'fail',
-        message: 'No message data provided'
-      })
-    }
+    let message
 
-    const message = await Message.findByIdAndUpdate(
-      id,
-      messageData,
-      {
-        new: true,
-        runValidators: true
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      message = await Message.findByIdAndUpdate(
+        id,
+        messageData,
+        {
+          new: true,
+          runValidators: true
+        }
+      )
+    } else if (/^\d+$/.test(id)) {
+      const index = Number(id)
+
+      message = await Message.findOne()
+        .skip(index)
+        .exec()
+
+      if (message) {
+        Object.assign(message, messageData)
+        await message.save()
       }
-    )
+    }
 
     if (!message) {
       return res.status(404).json({
@@ -143,7 +143,7 @@ export const update = async (req, res, next) => {
       status: 'success',
       message: 'Message updated',
       data: {
-        message: message
+        message
       }
     })
   } catch (error) {
