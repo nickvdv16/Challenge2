@@ -1,4 +1,3 @@
-import mongoose from 'mongoose'
 import Message from '../../../models/api/v1/Messages.js'
 
 // GET /api/v1/messages
@@ -10,7 +9,7 @@ export const list = async (req, res, next) => {
     if (username) {
       const messages = await Message.find({
         user: username
-      }).select('-__v')
+      })
 
       return res.json({
         status: 'success',
@@ -40,13 +39,6 @@ export const list = async (req, res, next) => {
 export const show = async (req, res, next) => {
   try {
     const id = req.params.id
-
-    if (!mongoose.isValidObjectId(id)) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Message not found'
-      })
-    }
 
     const message = await Message.findById(id)
 
@@ -93,19 +85,11 @@ export const update = async (req, res, next) => {
   try {
     const id = req.params.id
 
-    if (!mongoose.isValidObjectId(id)) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Message not found'
-      })
-    }
-
     const updatedMessage = await Message.findByIdAndUpdate(
       id,
       req.body.message,
       {
-        new: true,
-        runValidators: true
+        new: true
       }
     )
 
@@ -133,13 +117,6 @@ export const update = async (req, res, next) => {
 export const remove = async (req, res, next) => {
   try {
     const id = req.params.id
-
-    if (!mongoose.isValidObjectId(id)) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Message not found'
-      })
-    }
 
     const deletedMessage = await Message.findByIdAndDelete(id)
 
