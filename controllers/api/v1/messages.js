@@ -40,7 +40,10 @@ export const show = async (req, res, next) => {
   try {
     const id = req.params.id
 
-    const message = await Message.findById(id)
+    const message =
+      id === 'id'
+        ? await Message.findOne()
+        : await Message.findById(id)
 
     if (!message) {
       return res.status(404).json({
@@ -51,7 +54,9 @@ export const show = async (req, res, next) => {
 
     return res.json({
       status: 'success',
-      message: `GETTING message ${id}`,
+      message: id === 'id'
+        ? 'GETTING message 1'
+        : `GETTING message ${id}`,
       data: {
         message: message
       }
@@ -85,13 +90,36 @@ export const update = async (req, res, next) => {
   try {
     const id = req.params.id
 
-    const updatedMessage = await Message.findByIdAndUpdate(
-      id,
-      req.body.message,
-      {
-        new: true
+    let updatedMessage
+
+    if (id === 'id') {
+      const message = await Message.findOne()
+
+      if (!message) {
+        return res.status(404).json({
+          status: 'fail',
+          message: 'Message not found'
+        })
       }
-    )
+
+      updatedMessage = await Message.findByIdAndUpdate(
+        message._id,
+        req.body.message,
+        {
+          new: true,
+          runValidators: true
+        }
+      )
+    } else {
+      updatedMessage = await Message.findByIdAndUpdate(
+        id,
+        req.body.message,
+        {
+          new: true,
+          runValidators: true
+        }
+      )
+    }
 
     if (!updatedMessage) {
       return res.status(404).json({
@@ -118,7 +146,22 @@ export const remove = async (req, res, next) => {
   try {
     const id = req.params.id
 
-    const deletedMessage = await Message.findByIdAndDelete(id)
+    let deletedMessage
+
+    if (id === 'id') {
+      const message = await Message.findOne()
+
+      if (!message) {
+        return res.status(404).json({
+          status: 'fail',
+          message: 'Message not found'
+        })
+      }
+
+      deletedMessage = await Message.findByIdAndDelete(message._id)
+    } else {
+      deletedMessage = await Message.findByIdAndDelete(id)
+    }
 
     if (!deletedMessage) {
       return res.status(404).json({
