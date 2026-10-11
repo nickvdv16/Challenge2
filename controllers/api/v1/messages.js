@@ -1,128 +1,154 @@
-const messages = [
-  {
-    user: 'John',
-    message: 'Hello'
-  },
-  {
-    user: 'Jane',
-    message: 'Hi'
-  }
-]
+import Message from '../../../models/api/v1/Messages.js'
 
 // GET /api/v1/messages
 // GET /api/v1/messages?user=username
-export const list = (req, res, next) => {
-  const username = req.query.user
+export const list = async (req, res, next) => {
+  try {
+    const username = req.query.user
 
-  if (username) {
-    const userMessages = messages.filter(
-      message => message.user.toLowerCase() === username.toLowerCase()
-    )
+    if (username) {
+      const messages = await Message.find({
+        user: {
+          $regex: `^${username}$`,
+          $options: 'i'
+        }
+      }).select('-__v')
 
-    return res.json({
+      return res.json({
+        status: 'success',
+        message: `Messages from user ${username}`,
+        data: {
+          messages: messages
+        }
+      })
+    }
+
+    const messages = await Message.find()
+
+    const formattedMessages = messages.map(message => ({
+      user: message.user,
+      message: message.text
+    }))
+
+    res.json({
       status: 'success',
-      message: `Messages from user ${username}`,
+      message: 'GETTING messages',
       data: {
-        messages: userMessages
+        messages: formattedMessages
       }
     })
+  } catch (error) {
+    next(error)
   }
-
-  res.json({
-    status: 'success',
-    message: 'GETTING messages',
-    data: {
-      messages: messages
-    }
-  })
 }
 
 
 // GET /api/v1/messages/:id
-export const show = (req, res, next) => {
-  const id = req.params.id
+export const show = async (req, res, next) => {
+  try {
+    const id = req.params.id
 
-  const message = messages[id]
+    const message = await Message.findById(id)
 
-  if (!message) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Message not found'
-    })
-  }
-
-  res.json({
-    status: 'success',
-    message: `GETTING message ${id}`,
-    data: {
-      message: message
+    if (!message) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Message not found'
+      })
     }
-  })
+
+    res.json({
+      status: 'success',
+      message: `GETTING message ${id}`,
+      data: {
+        message: {
+          _id: message._id,
+          user: message.user,
+          message: message.text
+        }
+      }
+    })
+  } catch (error) {
+    next(error)
+  }
 }
 
 
 // POST /api/v1/messages
-export const create = (req, res, next) => {
-  const newMessage = req.body.message
+export const create = async (req, res, next) => {
+  try {
+    const newMessage = await Message.create(req.body.message)
 
-  messages.push(newMessage)
-
-  res.json({
-    status: 'success',
-    message: 'Message saved',
-    data: {
-      message: newMessage
-    }
-  })
+    res.json({
+      status: 'success',
+      message: 'Message saved',
+      data: {
+        message: newMessage
+      }
+    })
+  } catch (error) {
+    next(error)
+  }
 }
 
 
 // PUT /api/v1/messages/:id
-export const update = (req, res, next) => {
-  const id = req.params.id
+export const update = async (req, res, next) => {
+  try {
+    const id = req.params.id
 
-  if (!messages[id]) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Message not found'
-    })
-  }
+    const message = await Message.findByIdAndUpdate(
+      id,
+      req.body.message,
+      {
+        new: true
+      }
+    )
 
-  messages[id] = {
-    ...messages[id],
-    ...req.body.message
-  }
-
-  res.json({
-    status: 'success',
-    message: 'Message updated',
-    data: {
-      message: messages[id]
+    if (!message) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Message not found'
+      })
     }
-  })
+
+    res.json({
+      status: 'success',
+      message: 'Message updated',
+      data: {
+        message: message
+      }
+    })
+  } catch (error) {
+    next(error)
+  }
 }
 
 
 // DELETE /api/v1/messages/:id
-export const remove = (req, res, next) => {
-  const id = req.params.id
+export const remove = async (req, res, next) => {
+  try {
+    const id = req.params.id
 
-  if (!messages[id]) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Message not found'
-    })
-  }
+    const message = await Message.findByIdAndDelete(id)
 
-  messages.splice(id, 1)
-
-  res.json({
-    status: 'success',
-    message: 'Message deleted',
-    data: {
-      message: {
-        _id: id
-      }
+    if (!message) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Message not found'
+      })
     }
-  })
+
+    res.json({
+      status: 'success',
+      message: 'Message deleted',
+      data: {
+        message: {
+          _id: id
+        }
+      }
+    })
+  } catch (error) {
+    next(error)
+  }
 }
