@@ -73,3 +73,6 @@ Thumbs.db
 
 # Ignore Docker data.
 /data
+
+# Ignore environment files.
+.env

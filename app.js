@@ -8,9 +8,19 @@ import 'dotenv/config'
 import createError from 'http-errors'
 import errorHandler from './middlewares/error-handler.js'
 import routes from './config/routes.js'
+import mongoose from 'mongoose'
 
 const app = express()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+mongoose
+  .connect(process.env.MONGODB)
+  .then(() => {
+    console.log('Connected to MongoDB')
+  })
+  .catch((error) => {
+    console.error('MongoDB connection error:', error)
+  })
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'))

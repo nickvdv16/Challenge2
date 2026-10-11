@@ -1,3 +1,5 @@
+import Message from '../../../models/Message.js'
+
 const messages = [
   {
     user: 'John',
