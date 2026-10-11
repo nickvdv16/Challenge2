@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import Message from '../../../models/api/v1/Messages.js'
 
 // GET /api/v1/messages
@@ -38,10 +39,16 @@ export const list = async (req, res, next) => {
 // GET /api/v1/messages/:id
 export const show = async (req, res, next) => {
   try {
-    const id = Number(req.params.id)
+    const id = req.params.id
 
-    const messages = await Message.find()
-    const message = messages[id]
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Message not found'
+      })
+    }
+
+    const message = await Message.findById(id)
 
     if (!message) {
       return res.status(404).json({
@@ -84,12 +91,9 @@ export const create = async (req, res, next) => {
 // PUT /api/v1/messages/:id
 export const update = async (req, res, next) => {
   try {
-    const id = Number(req.params.id)
+    const id = req.params.id
 
-    const messages = await Message.find()
-    const message = messages[id]
-
-    if (!message) {
+    if (!mongoose.isValidObjectId(id)) {
       return res.status(404).json({
         status: 'fail',
         message: 'Message not found'
@@ -97,13 +101,20 @@ export const update = async (req, res, next) => {
     }
 
     const updatedMessage = await Message.findByIdAndUpdate(
-      message._id,
+      id,
       req.body.message,
       {
         new: true,
         runValidators: true
       }
     )
+
+    if (!updatedMessage) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Message not found'
+      })
+    }
 
     return res.json({
       status: 'success',
@@ -121,19 +132,23 @@ export const update = async (req, res, next) => {
 // DELETE /api/v1/messages/:id
 export const remove = async (req, res, next) => {
   try {
-    const id = Number(req.params.id)
+    const id = req.params.id
 
-    const messages = await Message.find()
-    const message = messages[id]
-
-    if (!message) {
+    if (!mongoose.isValidObjectId(id)) {
       return res.status(404).json({
         status: 'fail',
         message: 'Message not found'
       })
     }
 
-    const deletedMessage = await Message.findByIdAndDelete(message._id)
+    const deletedMessage = await Message.findByIdAndDelete(id)
+
+    if (!deletedMessage) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Message not found'
+      })
+    }
 
     return res.json({
       status: 'success',
